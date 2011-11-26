@@ -32,6 +32,7 @@ public class InGameScreen extends GenericScreen implements InGameHUD{
 	protected ArmorBar armor;
 	protected HungerBar hunger;
 	protected ExpBar exp;
+        protected ItemBar itemBar;
 	protected ServerPlayerList playerList;
 	protected PopupScreen activePopup = null;
 	protected LinkedList<PopupScreen> queuedScreens = new LinkedList<PopupScreen>();
@@ -45,10 +46,10 @@ public class InGameScreen extends GenericScreen implements InGameHUD{
 		this.hunger = new HungerBar();
 		this.exp = new ExpBar();
 		this.playerList = new ServerPlayerList();
-		
+                this.itemBar = new ItemBar();
 		Addon spoutcraft = Spoutcraft.getAddonManager().getAddon("Spoutcraft");
 
-		attachWidget(spoutcraft, health).attachWidget(spoutcraft, bubble).attachWidget(spoutcraft, chat).attachWidget(spoutcraft, chatText).attachWidget(spoutcraft, armor).attachWidget(spoutcraft, hunger).attachWidget(spoutcraft, exp).attachWidget(spoutcraft, playerList);
+		attachWidget(spoutcraft, health).attachWidget(spoutcraft, itemBar).attachWidget(spoutcraft, bubble).attachWidget(spoutcraft, chat).attachWidget(spoutcraft, chatText).attachWidget(spoutcraft, armor).attachWidget(spoutcraft, hunger).attachWidget(spoutcraft, exp).attachWidget(spoutcraft, playerList);
 	}
 	
 	public int getVersion() {
@@ -99,6 +100,8 @@ public class InGameScreen extends GenericScreen implements InGameHUD{
 			exp = (ExpBar)widget;
 		else if (widget instanceof ServerPlayerList)
 			playerList = (ServerPlayerList)widget;
+                else if (widget instanceof ItemBar)
+			itemBar = (ItemBar)widget;
 		return super.updateWidget(widget);
 	}
 
@@ -119,6 +122,8 @@ public class InGameScreen extends GenericScreen implements InGameHUD{
 		if (widget instanceof ExpBar)
 			throw new UnsupportedOperationException("Cannot remove the exp bar. Use setVisible(false) to hide it instead");
 		if (widget instanceof ServerPlayerList)
+			throw new UnsupportedOperationException("Cannot remove the player list. Use setVisisble(false) to hide it instead");
+                if (widget instanceof ItemBar)
 			throw new UnsupportedOperationException("Cannot remove the player list. Use setVisisble(false) to hide it instead");
 		return super.removeWidget(widget);
 	}
@@ -143,6 +148,12 @@ public class InGameScreen extends GenericScreen implements InGameHUD{
 	public BubbleBar getBubbleBar() {
 		return bubble;
 	}
+
+        public ItemBar getItemBar() {
+            return itemBar;
+        }
+        
+        
 	
 	public ChatBar getChatBar() {
 		return chat;
@@ -205,7 +216,7 @@ public class InGameScreen extends GenericScreen implements InGameHUD{
 	}
 
 	public static boolean isCustomWidget(Widget widget) {
-		return widget instanceof HealthBar || widget instanceof BubbleBar || widget instanceof ChatTextBox || widget instanceof ChatBar || widget instanceof ArmorBar || widget instanceof HungerBar || widget instanceof ExpBar || widget instanceof ServerPlayerList;
+		return widget instanceof HealthBar || widget instanceof ItemBar ||widget instanceof BubbleBar || widget instanceof ChatTextBox || widget instanceof ChatBar || widget instanceof ArmorBar || widget instanceof HungerBar || widget instanceof ExpBar || widget instanceof ServerPlayerList;
 	}
 
 	public ScreenType getScreenType() {
@@ -218,5 +229,6 @@ public class InGameScreen extends GenericScreen implements InGameHUD{
 		armor.setVisible(toggle);
 		hunger.setVisible(toggle);
 		exp.setVisible(toggle);
+                itemBar.setVisible(toggle);
 	}
 }
