@@ -15,10 +15,12 @@ import net.minecraft.src.GuiButton;
 import net.minecraft.src.GuiIngame;
 import net.minecraft.src.GuiScreen;
 import net.minecraft.src.Item;
+import net.minecraft.src.ItemStack;
 import net.minecraft.src.Material;
 import net.minecraft.src.Potion;
 import net.minecraft.src.RenderBlocks;
 import net.minecraft.src.RenderHelper;
+import net.minecraft.src.RenderItem;
 import net.minecraft.src.RenderManager;
 import net.minecraft.src.ScaledResolution;
 import net.minecraft.src.Tessellator;
@@ -34,6 +36,7 @@ public class MCRenderDelegate implements RenderDelegate {
 	private Color scrollBarColor = new Color(0.26F, 0.26F, 0.26F, 0.33F);
 	private Color scrollBarColor2 = new Color(0.1F, 0.1F, 0.1F, 0.38F);
 	
+        private static RenderItem itemRenderTool = new RenderItem();
 	public static boolean shouldRenderCursor = false;
 	protected final RenderItemCustom renderer;
 	protected HashMap<UUID, GuiButton> customFields = new HashMap<UUID, GuiButton>();
@@ -160,11 +163,12 @@ public class MCRenderDelegate implements RenderDelegate {
 		GL11.glShadeModel(GL11.GL_SMOOTH);
 		Tessellator tessellator = Tessellator.instance;
 		tessellator.startDrawingQuads();
+		boolean VERT = gradient.getOrientation() == Orientation.VERTICAL;
 		tessellator.setColorRGBA_F(gradient.getTopColor().getRedF(), gradient.getTopColor().getGreenF(), gradient.getTopColor().getBlueF(), gradient.getTopColor().getAlphaF());
-		tessellator.addVertex(gradient.getWidth() + gradient.getScreenX(), gradient.getScreenY(), 0.0D);
+		tessellator.addVertex((VERT ? gradient.getWidth() : 0) + gradient.getScreenX(), (VERT ? 0 : gradient.getHeight()) + gradient.getScreenY(), 0.0D);
 		tessellator.addVertex(gradient.getScreenX(), gradient.getScreenY(), 0.0D);
 		tessellator.setColorRGBA_F(gradient.getBottomColor().getRedF(), gradient.getBottomColor().getGreenF(), gradient.getBottomColor().getBlueF(), gradient.getBottomColor().getAlphaF());
-		tessellator.addVertex(gradient.getScreenX(), gradient.getHeight() + gradient.getScreenY(), 0.0D);
+		tessellator.addVertex((VERT ? 0 : gradient.getWidth()) + gradient.getScreenX(), (VERT ? gradient.getHeight() : 0) + gradient.getScreenY(), 0.0D);
 		tessellator.addVertex(gradient.getWidth() + gradient.getScreenX(), gradient.getHeight() + gradient.getScreenY(), 0.0D);
 		tessellator.draw();
 		GL11.glShadeModel(GL11.GL_FLAT);
@@ -610,7 +614,7 @@ public class MCRenderDelegate implements RenderDelegate {
 		GL11.glTranslated(gs.getScreenX(), gs.getScreenY(), 0);
 		GL11.glEnable(GL11.GL_SCISSOR_TEST);
 		scissorWidget(gs);
-		RenderUtil.drawRectangle(0, 0, (int)gs.getWidth(), (int)gs.getHeight(), new Color(0.0F,0.0F,0.0F,0.6F).toInt());
+		RenderUtil.drawRectangle(0, 0, (int)gs.getWidth(), (int)gs.getHeight(), gs.getBackgroundColor().toInt());
 		GL11.glPushMatrix();
 		GL11.glTranslated(-scrollLeft, -scrollTop, 0);
 		GL11.glPushMatrix();
@@ -765,4 +769,107 @@ public class MCRenderDelegate implements RenderDelegate {
 //		scrollY = 3 + p * (lw.getHeight() - 16.0 - 6);
 //		RenderUtil.drawTexturedModalRectangle((int) (lw.getWidth() - 14), (int) scrollY, 0, 208, 16, 16, 0f);
 //	}
-}
+
+    @Override
+    public void render(ItemBar ib) {
+        if(ib.isVisible()){
+        
+        int numOfBoxes = ib.getBoxNum();
+        int xPosition = (int) ib.getScreenX();
+        int yPosition = (int) ib.getScreenY();
+        int size = ib.getBoxWidth();
+        int startSize = ib.getFirstBoxLength();
+        int ySize = ib.getBoxHeight();
+        int boxOffset = ib.getBoxOffset();
+        int tempSize;
+        int locationVar = 0;
+        int textureVar = 0;
+        int currentItem = Minecraft.theMinecraft.thePlayer.inventory.currentItem;
+        
+        if(currentItem > numOfBoxes - 1){
+            currentItem = numOfBoxes -1;
+            Minecraft.theMinecraft.thePlayer.inventory.currentItem = currentItem;
+        }
+        int i = 1;
+        
+        while(i <= numOfBoxes){
+            
+            if(i == 1){
+                tempSize = startSize;
+                
+            }else{
+                tempSize = size;
+            }
+            RenderUtil.drawTexturedModalRectangle(xPosition + locationVar, yPosition, textureVar, 0, tempSize, ySize, 0F);
+            
+            locationVar = locationVar + tempSize + boxOffset;
+            textureVar = textureVar + tempSize;
+            i++;
+        }
+        
+        
+        RenderUtil.drawTexturedModalRectangle((xPosition - 1) + (currentItem * size) + (boxOffset * currentItem) , yPosition, 0, 22, 24, 22, 0F);
+        }
+    }
+
+    @Override
+    public void render(ItemBar ib, Float f) {
+        
+        
+        if(ib.isVisible()){
+            System.out.print("Called at Coordinate : " + ib.getScreenX() + "," + ib.getScreenY() );
+        int xPositionBase = (int) ib.getScreenX();
+        int yPositionBase = (int) ib.getScreenY();
+        int boxHeight = ib.getBoxHeight();
+        int boxLength = ib.getBoxWidth();
+        int offset = ib.getBoxOffset();
+        
+        int i;
+        
+        for (i = 0; i < ib.getBoxNum(); ++i) {
+			int x = xPositionBase + (i * 20) + (i * offset) + 3;
+			int y = yPositionBase + 3;
+			this.renderInventorySlot(i, x, y, f);
+		}
+        /*
+        if(stack != null){
+            float animationCount = (float)stack.animationsToGo - f;
+            
+            if(animationCount > 0F){
+                GL11.glPushMatrix();
+                float workingVar = 1F + animationCount / 5.0F;
+                GL11.glTranslatef(xPositionBase + (), workingVar, workingVar);
+            }
+         
+         
+        }
+         * 
+         */
+      
+        }
+    }
+    
+        private void renderInventorySlot(int var1, int var2, int var3, float var4) {
+                
+                ItemStack stack = Minecraft.theMinecraft.thePlayer.inventory.getStackInSlot(var1);
+		if(stack != null) {
+			float var6 = (float)stack.animationsToGo - var4;
+			if(var6 > 0.0F) {
+                                
+				GL11.glPushMatrix();
+				float var7 = 1.0F + var6 / 5.0F;
+				GL11.glTranslatef((float)(var2 + 8), (float)(var3 + 12), 0.0F);
+				GL11.glScalef(1.0F / var7, (var7 + 1.0F) / 2.0F, 1.0F);
+				GL11.glTranslatef((float)(-(var2 + 8)), (float)(-(var3 + 12)), 0.0F);
+			}
+                        
+			itemRenderTool.renderItemIntoGUI(Minecraft.theMinecraft.fontRenderer, Minecraft.theMinecraft.renderEngine, stack, var2, var3);
+			if(var6 > 0.0F) {
+				GL11.glPopMatrix();
+			}
+
+			itemRenderTool.renderItemOverlayIntoGUI(Minecraft.theMinecraft.fontRenderer, Minecraft.theMinecraft.renderEngine, stack, var2, var3);
+		}
+	}
+    }
+
